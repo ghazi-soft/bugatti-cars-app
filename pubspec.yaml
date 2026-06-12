@@ -1,0 +1,62 @@
+name: bugatti_cars
+description: Bugatti Cars - Car Dealership App by Ghazi Soft
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: '>=2.18.0 <3.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # API & HTTP
+  http: ^0.13.5
+
+  # State Management
+  provider: ^5.0.0
+
+  # Local Storage
+  shared_preferences: ^2.0.15
+  flutter_riverpod: ^2.3.6
+  cached_network_image: ^3.2.3
+
+  # Image Picker
+  image_picker: ^0.8.5+1
+
+  # UI
+  cupertino_icons: ^1.0.2
+  intl: ^0.17.0
+  supabase_flutter: ^1.10.25
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/images/
+    - assets/icons/
+    - assets/fonts/Cairo/
+    - assets/fonts/Inter/
+
+  fonts:
+    - family: Poppins
+      fonts:
+        - asset: assets/fonts/Poppins-Regular.ttf
+        - asset: assets/fonts/Poppins-Bold.ttf
+          weight: 700
+    - family: Cairo
+      fonts:
+        - asset: assets/fonts/Cairo/Cairo-Regular.ttf
+        - asset: assets/fonts/Cairo/Cairo-Bold.ttf
+          weight: 700
+    - family: Inter
+      fonts:
+        - asset: assets/fonts/Inter/Inter-Regular.ttf
+        - asset: assets/fonts/Inter/Inter-Bold.ttf
+          weight: 700

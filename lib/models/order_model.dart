@@ -1,6 +1,6 @@
 class Order {
   final int id;
-  final String userId;
+  final int userId;
   final int carId;
   final String firstName;
   final String lastName;
@@ -28,19 +28,17 @@ class Order {
   // تحويل من JSON إلى Object
   factory Order.fromJson(Map<String, dynamic> json) {
     return Order(
-      id: json['id'] ?? 0,
-      userId: json['user_id'] ?? '',
-      carId: json['car_id'] ?? 0,
-      firstName: json['first_name'] ?? '',
-      lastName: json['last_name'] ?? '',
+      id: _parseInt(json['id']),
+      userId: _parseInt(json['userId'] ?? json['user_id']),
+      carId: _parseInt(json['carId'] ?? json['car_id']),
+      firstName: json['firstName'] ?? json['first_name'] ?? '',
+      lastName: json['lastName'] ?? json['last_name'] ?? '',
       email: json['email'] ?? '',
       phone: json['phone'] ?? '',
       notes: json['notes'],
-      total: (json['total'] ?? 0).toDouble(),
+      total: _parseDouble(json['total']),
       status: json['status'] ?? 'pending',
-      createdAt: json['created_at'] != null
-          ? DateTime.parse(json['created_at'])
-          : DateTime.now(),
+      createdAt: _parseDateTime(json['createdAt'] ?? json['created_at']),
     );
   }
 
@@ -60,7 +58,7 @@ class Order {
   }
 
   // الاسم الكامل
-  String get fullName => '$firstName $lastName';
+  String get fullName => '$firstName $lastName'.trim();
 
   // حالة الطلب بالعربي
   String get statusText {
@@ -76,7 +74,7 @@ class Order {
     }
   }
 
-  // لون الحالة
+  // لون الحالة (ARGB)
   String get statusColor {
     switch (status) {
       case 'pending':
@@ -92,4 +90,26 @@ class Order {
 
   // السعر بصيغة جميلة
   String get totalFormatted => '\$${total.toStringAsFixed(2)}';
+
+  // Helpers
+  static int _parseInt(dynamic value) {
+    if (value is int) return value;
+    if (value is String) return int.tryParse(value) ?? 0;
+    return 0;
+  }
+
+  static double _parseDouble(dynamic value) {
+    if (value is double) return value;
+    if (value is int) return value.toDouble();
+    if (value is String) return double.tryParse(value) ?? 0.0;
+    return 0.0;
+  }
+
+  static DateTime _parseDateTime(dynamic date) {
+    if (date is DateTime) return date;
+    if (date is String && date.isNotEmpty) {
+      return DateTime.tryParse(date) ?? DateTime.now();
+    }
+    return DateTime.now();
+  }
 }

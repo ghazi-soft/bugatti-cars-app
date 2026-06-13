@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../repositories/auth_repository.dart';
+import '../../services/validation_service.dart';
 import 'register_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -11,6 +12,7 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final AuthRepository authRepository = AuthRepository();
+  final ValidationService validationService = ValidationService();
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
 
@@ -26,9 +28,29 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> _login() async {
-    if (emailController.text.isEmpty || passwordController.text.isEmpty) {
+    final email = emailController.text.trim().toLowerCase();
+    final password = passwordController.text;
+
+    // =========== التحقق من الحقول ===========
+    if (email.isEmpty || password.isEmpty) {
       setState(() {
         errorMessage = 'يرجى ملء جميع الحقول';
+      });
+      return;
+    }
+
+    // =========== التحقق من صحة البريد ===========
+    if (!validationService.validateEmail(email)) {
+      setState(() {
+        errorMessage = 'البريد الإلكتروني غير صحيح';
+      });
+      return;
+    }
+
+    // =========== التحقق من صحة كلمة المرور ===========
+    if (!validationService.validatePassword(password)) {
+      setState(() {
+        errorMessage = 'كلمة المرور يجب أن تكون 8 أحرف على الأقل';
       });
       return;
     }
@@ -39,21 +61,21 @@ class _LoginScreenState extends State<LoginScreen> {
     });
 
     try {
-      final user = await authRepository.signIn(
-        emailController.text,
-        passwordController.text,
-      );
+      final user = await authRepository.signIn(email, password);
 
       if (!mounted) return;
 
-      if (user.role == 'admin') {
+      if (user.isAdmin) {
         Navigator.pushReplacementNamed(context, '/admin');
       } else {
         Navigator.pushReplacementNamed(context, '/home');
       }
     } catch (e) {
+      if (!mounted) return;
+      
       setState(() {
-        errorMessage = e.toString().replaceAll('Exception: ', '');
+        // لا نكشف تفاصيل الخطأ - رسالة عامة فقط
+        errorMessage = 'بيانات الدخول غير صحيحة';
       });
     } finally {
       if (mounted) {

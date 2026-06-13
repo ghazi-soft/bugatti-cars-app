@@ -150,6 +150,55 @@ class OrderListNotifier extends StateNotifier<AsyncValue<List<Order>>> {
     state = const AsyncValue.loading();
     await loadOrders();
   }
+
+  // ============ إضافة/تحديث الطلبات ============
+  
+  Future<void> addOrder(Order order) async {
+    try {
+      final current = state.value ?? [];
+      state = AsyncValue.data([order, ...current]);
+    } catch (e, st) {
+      state = AsyncError(e, st);
+    }
+  }
+
+  Future<void> updateOrderStatus(int orderId, String status) async {
+    try {
+      final current = state.value ?? [];
+      final updated = current.map((order) {
+        if (order.id == orderId) {
+          return Order(
+            id: order.id,
+            userId: order.userId,
+            carId: order.carId,
+            firstName: order.firstName,
+            lastName: order.lastName,
+            email: order.email,
+            phone: order.phone,
+            notes: order.notes,
+            total: order.total,
+            status: status,
+            createdAt: order.createdAt,
+          );
+        }
+        return order;
+      }).toList();
+
+      state = AsyncValue.data(updated);
+    } catch (e, st) {
+      state = AsyncError(e, st);
+    }
+  }
+
+  Future<void> deleteOrder(int orderId) async {
+    try {
+      final current = state.value ?? [];
+      final updated = current.where((order) => order.id != orderId).toList();
+      state = AsyncValue.data(updated);
+    } catch (e, st) {
+      state = AsyncError(e, st);
+    }
+  }
 }
 
 // ---------------- CHAT ----------------

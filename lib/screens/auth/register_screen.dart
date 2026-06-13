@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../repositories/auth_repository.dart';
+import '../../services/validation_service.dart';
+import 'login_screen.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({Key? key}) : super(key: key);
@@ -10,6 +12,7 @@ class RegisterScreen extends StatefulWidget {
 
 class _RegisterScreenState extends State<RegisterScreen> {
   final AuthRepository authRepository = AuthRepository();
+  final ValidationService validationService = ValidationService();
   final firstNameController = TextEditingController();
   final lastNameController = TextEditingController();
   final emailController = TextEditingController();
@@ -32,30 +35,66 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   Future<void> _register() async {
-    // التحقق من الحقول
-    if (firstNameController.text.isEmpty ||
-        lastNameController.text.isEmpty ||
-        emailController.text.isEmpty ||
-        passwordController.text.isEmpty ||
-        confirmPasswordController.text.isEmpty) {
+    final firstName = firstNameController.text.trim();
+    final lastName = lastNameController.text.trim();
+    final email = emailController.text.trim().toLowerCase();
+    final password = passwordController.text;
+    final confirmPassword = confirmPasswordController.text;
+
+    // =========== التحقق من الحقول ===========
+    if (firstName.isEmpty || lastName.isEmpty || email.isEmpty || 
+        password.isEmpty || confirmPassword.isEmpty) {
       setState(() {
         errorMessage = 'يرجى ملء جميع الحقول';
       });
       return;
     }
 
-    // التحقق من مطابقة كلمات المرور
-    if (passwordController.text != confirmPasswordController.text) {
+    // =========== التحقق من البريد الإلكتروني ===========
+    if (!validationService.validateEmail(email)) {
+      setState(() {
+        errorMessage = 'البريد الإلكتروني غير صحيح';
+      });
+      return;
+    }
+
+    // =========== التحقق من كلمة المرور ===========
+    if (!validationService.validatePassword(password)) {
+      setState(() {
+        errorMessage = 'كلمة المرور يجب أن تكون 8 أحرف على الأقل';
+      });
+      return;
+    }
+
+    // =========== التحقق من تطابق كلمات المرور ===========
+    if (password != confirmPassword) {
       setState(() {
         errorMessage = 'كلمات المرور غير متطابقة';
       });
       return;
     }
 
-    // التحقق من طول كلمة المرور
-    if (passwordController.text.length < 6) {
+    // =========== التحقق من الاسم الأول ===========
+    if (!validationService.validateName(firstName)) {
       setState(() {
-        errorMessage = 'كلمة المرور يجب أن تكون 6 أحرف على الأقل';
+        errorMessage = 'الاسم الأول يجب أن يكون بين 1 و 50 حرفاً';
+      });
+      return;
+    }
+
+    // =========== التحقق من الاسم الأخير ===========
+    if (!validationService.validateName(lastName)) {
+      setState(() {
+        errorMessage = 'الاسم الأخير يجب أن يكون بين 1 و 50 حرفاً';
+      });
+      return;
+    }
+
+    // =========== التحقق من SQL Injection ===========
+    if (validationService.containsSQLInjectionPattern(firstName) ||
+        validationService.containsSQLInjectionPattern(lastName)) {
+      setState(() {
+        errorMessage = 'تم اكتشاف محتوى غير آمن في البيانات';
       });
       return;
     }
@@ -67,29 +106,37 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
     try {
       final user = await authRepository.signUp(
-        firstNameController.text,
-        lastNameController.text,
-        emailController.text,
-        passwordController.text,
+        validationService.sanitizeInput(firstName),
+        validationService.sanitizeInput(lastName),
+        email,
+        password,
       );
 
       if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('تم التسجيل بنجاح! سيتم نقلك للصفحة الرئيسية'),
+          content: Text('تم إنشاء الحساب بنجاح'),
           backgroundColor: Colors.green,
         ),
       );
 
-      if (user.role == 'admin') {
+      if (user.isAdmin) {
         Navigator.pushReplacementNamed(context, '/admin');
       } else {
         Navigator.pushReplacementNamed(context, '/home');
       }
     } catch (e) {
+      if (!mounted) return;
+      
+      final message = e.toString().replaceAll('Exception: ', '');
       setState(() {
-        errorMessage = e.toString().replaceAll('Exception: ', '');
+        // لا نكشف تفاصيل الخطأ
+        if (message.contains('already exists')) {
+          errorMessage = 'البريد الإلكتروني مستخدم بالفعل';
+        } else {
+          errorMessage = 'خطأ في إنشاء الحساب، حاول مرة أخرى';
+        }
       });
     } finally {
       if (mounted) {

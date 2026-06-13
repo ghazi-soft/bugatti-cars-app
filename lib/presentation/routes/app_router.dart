@@ -13,6 +13,7 @@ import 'package:bugatti_cars/presentation/pages/auth/login_screen.dart';
 import 'package:bugatti_cars/presentation/pages/auth/onboarding_screen.dart';
 import 'package:bugatti_cars/presentation/pages/auth/register_screen.dart';
 import 'package:bugatti_cars/presentation/pages/splash_screen.dart';
+import 'package:bugatti_cars/presentation/pages/user/about_screen.dart';
 import 'package:bugatti_cars/presentation/pages/user/car_details_screen.dart';
 import 'package:bugatti_cars/presentation/pages/user/cars_list_screen.dart';
 import 'package:bugatti_cars/presentation/pages/user/chat_screen.dart';
@@ -28,6 +29,9 @@ import 'package:bugatti_cars/presentation/pages/user/settings_screen.dart';
 class AppRouter {
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
+      case AppRoutes.root:
+      case AppRoutes.home:
+        return MaterialPageRoute(builder: (_) => const HomeScreen());
       case AppRoutes.splash:
         return MaterialPageRoute(builder: (_) => const SplashScreen());
       case AppRoutes.onboarding:
@@ -38,8 +42,8 @@ class AppRouter {
         return MaterialPageRoute(builder: (_) => const RegisterScreen());
       case AppRoutes.forgotPassword:
         return MaterialPageRoute(builder: (_) => const ForgotPasswordScreen());
-      case AppRoutes.home:
-        return MaterialPageRoute(builder: (_) => const HomeScreen());
+      case AppRoutes.about:
+        return MaterialPageRoute(builder: (_) => const AboutScreen());
       case AppRoutes.cars:
         return MaterialPageRoute(builder: (_) => const CarsListScreen());
       case AppRoutes.carDetails:

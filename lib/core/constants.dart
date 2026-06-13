@@ -1,11 +1,13 @@
 // App Routes
 class AppRoutes {
+  static const String root = '/';
   static const String splash = '/splash';
   static const String onboarding = '/onboarding';
   static const String login = '/login';
   static const String register = '/register';
   static const String forgotPassword = '/forgot-password';
   static const String home = '/home';
+  static const String about = '/about';
   static const String cars = '/cars';
   static const String carDetails = '/car-details';
   static const String search = '/search';
